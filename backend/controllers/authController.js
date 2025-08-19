@@ -7,6 +7,32 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
+// // @desc    Register new user
+// // @route   POST /api/auth/register
+// // @access  Public
+// const registerUser = async (req, res) => {
+//   const { name, email, password } = req.body;
+
+//   try {
+//     let user = await User.findOne({ email });
+//     if (user) {
+//       return res.status(400).json({ message: "User already exists" });
+//     }
+
+//     user = new User({ name, email, password });
+//     await user.save();
+
+//     res.status(201).json({
+//       _id: user._id,
+//       name: user.name,
+//       email: user.email,
+//       token: generateToken(user._id),
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// };
+
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -19,8 +45,8 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    user = new User({ name, email, password });
-    await user.save();
+    user = new User({ name, email, password }); // plain password
+    await user.save(); // schema pre-save hook hashes automatically
 
     res.status(201).json({
       _id: user._id,
@@ -46,6 +72,11 @@ const loginUser = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+    
+    // console.log("Entered:", password);
+    // console.log("Hashed in DB:", user.password);
+    // console.log("Match?", isMatch);
+
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
