@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const authRoutes = require('./routes/authRoutes');
 const challengeRoutes = require('./routes/challengesRoutes');
-
+const progressRoutes = require('./routes/progressRoutes');
 
 // health check
 app.get("/health", (req, res) => {
@@ -24,7 +24,7 @@ app.get("/health", (req, res) => {
 //use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/challenges', challengeRoutes);
-
+app.use('/api/progress', progressRoutes);
 
 const PORT = process.env.PORT || 4000;
 
