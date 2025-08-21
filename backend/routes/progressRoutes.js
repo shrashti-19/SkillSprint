@@ -10,4 +10,4 @@ router.post("/log/:challengeId", auth, logDailyActivity);
 //get user current streak in a specific challenge
 router.get("/streak/:userId/:challengeId", getUserStreak);
 
-modules.exports = router;
+module.exports = router;
