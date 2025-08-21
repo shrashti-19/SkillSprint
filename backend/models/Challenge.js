@@ -33,6 +33,11 @@ const challengeSchema = new mongoose.Schema({
         type: Number,
         default: 0, // streak days
       },
+      //user last checked in 
+      lastActivityDate:{
+        type: Date,
+        default: null,
+      }
     },
     ],
 },{timestamps: true});
