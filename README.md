@@ -138,7 +138,7 @@ REACT_APP_ENVIRONMENT=development
 - [x] Streak calculation algorithms
 - [x] Progress tracking
 - [x] RESTful API design
-- [x] Database schema optimization
+
 
 ### 🚧 In Development
 - [ ] Frontend React application
