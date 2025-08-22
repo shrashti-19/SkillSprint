@@ -16,6 +16,8 @@ class LRUCache {
       console.log(`🎯 Cache HIT for user: ${key}`);
       return value;
     }
+
+
     
     console.log(`❌ Cache MISS for user: ${key}`);
     return null;
