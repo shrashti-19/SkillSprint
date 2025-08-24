@@ -27,7 +27,7 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/users', require("./routes/userRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
-
+app.use("/api/leaderboard", require('./routes/leaderboard'));
 
 
 const PORT = process.env.PORT || 4000;
