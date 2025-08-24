@@ -2,6 +2,7 @@
 
 const Challenge = require("../models/Challenge");
 const User = require("../models/User");
+const {updateLeaderboard} = require('./leaderboardController');
 
 // 🎯 MAIN FUNCTION: Log daily activity (like checking off a habit tracker)
 const logDailyActivity = async (req, res) => {
@@ -61,13 +62,19 @@ const logDailyActivity = async (req, res) => {
 
     // 📝 STEP 6: Save the updated challenge
     await challenge.save();
+    await updateLeaderboard(challengeId, req.user.id, {
+      currentStreak : participant.streak,
+      totalActiveDays: participant.streak,
+      lastActivityDate: today
+    })
 
     // 📝 STEP 7: Send success response with streak info
     res.status(200).json({
       message: "Daily activity logged successfully! 🎉",
       streak: participant.streak,
       progress: participant.progress,
-      challengeTitle: challenge.title
+      challengeTitle: challenge.title,
+      leaderboardUpdated: true
     });
 
   } catch (error) {
