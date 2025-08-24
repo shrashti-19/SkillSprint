@@ -156,7 +156,7 @@ class MaxHeap {
     
     let position = 1;
     for (let i = 0; i < this.heap.length; i++) {
-      if (this.heap[i].currentStreak > userStreak) {
+      if (i !== userIndex && this.heap[i].currentStreak > userStreak) {
         position++;
       }
     }
@@ -216,6 +216,10 @@ class LeaderboardManager {
   // Get user's stats in challenge
   getUserStats(challengeId, userId) {
     const heap = this.getHeap(challengeId);
+    
+    console.log(`DEBUG: Looking for user ${userId} in challenge ${challengeId}`);
+    console.log(`DEBUG: Heap has ${heap.size()} users`);
+    console.log(`DEBUG: User exists in heap: ${heap.hasUser(userId)}`);
     
     if (!heap.hasUser(userId)) {
       return null;

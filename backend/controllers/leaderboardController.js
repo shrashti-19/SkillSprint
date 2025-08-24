@@ -2,7 +2,7 @@
 
 const Challenge = require('../models/Challenge');
 const User = require('../models/User');
-const { leaderboardManager } = require('../utils/LeaderBoardHeap');
+const { leaderboardManager } = require('../utils/LeaderboardHeap');
 
 // Get leaderboard for a specific challenge
 const getChallengeLeaderboard = async (req, res) => {
@@ -29,7 +29,7 @@ const getChallengeLeaderboard = async (req, res) => {
         return {
           ...entry,
           username: user?.username || 'Unknown User',
-          
+          // Add any other user fields you want to display
         };
       })
     );
@@ -70,14 +70,29 @@ const getUserPosition = async (req, res) => {
     }
 
     // Check if user is participant
-    if (!challenge.participants.includes(userId)) {
+    if (!challenge.participants.some(p => p.user.toString() === userId)) {
       return res.status(403).json({
         success: false,
         message: 'User is not a participant in this challenge'
       });
     }
 
-    // Get user stats from heap
+    // FORCE REFRESH: Ensure heap has latest data
+    const userParticipant = challenge.participants.find(p => p.user.toString() === userId);
+    const user = await User.findById(userId).select('username');
+    
+    const userData = {
+      userId: userId,
+      username: user?.username || 'Unknown User',
+      currentStreak: userParticipant.streak || 0,
+      totalActiveDays: userParticipant.streak || 0,
+      lastActivity: userParticipant.lastActivityDate || new Date()
+    };
+
+    // Update/ensure user is in heap
+    leaderboardManager.updateUserPosition(challengeId, userData);
+
+    // Now get user stats from heap
     const userStats = leaderboardManager.getUserStats(challengeId, userId);
     
     if (!userStats) {
@@ -87,13 +102,6 @@ const getUserPosition = async (req, res) => {
       });
     }
 
-    // Get user details
-    const user = await User.findById(userId).select('username');
-    
-    // Get user's current streak from challenge
-    const userProgress = challenge.participants.find(p => p.toString() === userId);
-    const currentStreak = challenge.streaks?.get(userId) || 0;
-
     res.json({
       success: true,
       data: {
@@ -102,7 +110,7 @@ const getUserPosition = async (req, res) => {
         challengeId,
         position: userStats.position,
         totalParticipants: userStats.totalParticipants,
-        currentStreak,
+        currentStreak: userParticipant.streak || 0,
         percentile: Math.round((1 - (userStats.position - 1) / userStats.totalParticipants) * 100)
       }
     });
@@ -155,8 +163,7 @@ const initializeChallengeLeaderboard = async (req, res) => {
     const { challengeId } = req.params;
 
     // Get challenge with participants
-    const challenge = await Challenge.findById(challengeId)
-      .populate('participants', 'username');
+    const challenge = await Challenge.findById(challengeId);
 
     if (!challenge) {
       return res.status(404).json({
@@ -168,12 +175,16 @@ const initializeChallengeLeaderboard = async (req, res) => {
     // Initialize each participant in the heap
     let initialized = 0;
     for (const participant of challenge.participants) {
-      const currentStreak = challenge.streaks?.get(participant._id.toString()) || 0;
-      const lastActivity = challenge.lastActivityDate?.get(participant._id.toString()) || new Date();
+      // Get streak from participant object, not from challenge.streaks map
+      const currentStreak = participant.streak || 0;
+      const lastActivity = participant.lastActivityDate || new Date();
+
+      // Get user info for the heap
+      const user = await User.findById(participant.user).select('username');
 
       const userData = {
-        userId: participant._id.toString(),
-        username: participant.username,
+        userId: participant.user.toString(),
+        username: user?.username || 'Unknown User',
         currentStreak,
         totalActiveDays: currentStreak, // Approximate
         lastActivity

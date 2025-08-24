@@ -10,6 +10,12 @@ const {
 } = require('../controllers/leaderboardController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// @route   GET /api/leaderboard/global-stats
+// @desc    Get global statistics across all challenges
+// @access  Private (admin dashboard)
+// ⚡ MUST BE FIRST - before /:challengeId route!
+router.get('/global-stats', authMiddleware, getGlobalStats);
+
 // @route   GET /api/leaderboard/:challengeId
 // @desc    Get leaderboard for specific challenge
 // @access  Public (participants can see rankings)
@@ -24,11 +30,6 @@ router.get('/:challengeId/user/:userId', authMiddleware, getUserPosition);
 // @desc    Initialize/refresh leaderboard from existing data
 // @access  Private (admin or challenge creator)
 router.post('/:challengeId/initialize', authMiddleware, initializeChallengeLeaderboard);
-
-// @route   GET /api/leaderboard/global-stats
-// @desc    Get global statistics across all challenges
-// @access  Private (admin dashboard)
-router.get('/global-stats', authMiddleware, getGlobalStats);
 
 // @route   GET /api/leaderboard/:challengeId/top/:limit
 // @desc    Get top N users (flexible limit)
