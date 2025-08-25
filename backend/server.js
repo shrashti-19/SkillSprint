@@ -30,6 +30,7 @@ app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/leaderboard", require('./routes/leaderboard'));
 
 
+
 const PORT = process.env.PORT || 4000;
 
 async function start() {
