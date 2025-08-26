@@ -14,7 +14,7 @@ const client = redis.createClient({
   password: process.env.REDIS_PASSWORD,
 });
 
-// STEP 2: Keep your existing event handlers
+
 client.on('connect', () => console.log('✅ Redis connected'));
 client.on('reconnecting', () => console.log('🔄 Redis reconnecting...'));
 client.on('end', () => console.log('🔌 Redis connection closed'));
