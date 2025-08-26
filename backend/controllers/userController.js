@@ -1,14 +1,19 @@
 
 const User = require("../models/User");
 const Challenge = require("../models/Challenge");
-const userProfileCache = require("../utils/LRUcache");
+
+const {cache, ensureConnected} = require('../utils/redisClient');
+
 
 const getUserProfile = async (req, res) => {
   try {
     const { userId } = req.params;
 
     // Step 1: Check LRU cache first
-    let userProfile = userProfileCache.get(userId);
+
+    await ensureConnected();
+    let cachedProfile = await cache.getUserProfile(userId);
+    let userProfile = cachedProfile ? cachedProfile.data : null;
     
     if (userProfile) {
       return res.json({
@@ -66,7 +71,7 @@ const getUserProfile = async (req, res) => {
     };
 
     // Step 6: Store in cache
-    userProfileCache.set(userId, enhancedProfile);
+    await cache.setUserProfile(userId, enhancedProfile);
 
     res.json({
       success: true,
