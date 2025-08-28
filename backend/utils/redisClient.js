@@ -133,6 +133,166 @@ class SkillSprintCache {
       return 0;
     }
   }
+
+
+  // ADD THESE FUNCTIONS TO YOUR SkillSprintCache CLASS in utils/redisClient.js
+// (Add after your existing getUserProfile and setUserProfile functions)
+
+  // 🚀 CHALLENGE CACHING FUNCTIONS
+
+  // Get all challenges list
+  async getAllChallenges() {
+    try {
+      const key = 'skillsprint:challenges:all';
+      const cached = await this.client.get(key);
+      
+      if (cached) {
+        console.log('🎯 Cache HIT for challenges list');
+        return {
+          data: JSON.parse(cached),
+          cached_at: new Date().toISOString()
+        };
+      }
+      
+      console.log('📀 Cache MISS for challenges list');
+      return null;
+    } catch (error) {
+      console.error('❌ Redis getAllChallenges error:', error.message);
+      return null;
+    }
+  }
+
+  // Set all challenges list
+  async setAllChallenges(challengesData, ttl = 1800) { // 30 min default
+    try {
+      const key = 'skillsprint:challenges:all';
+      await this.client.setEx(key, ttl, JSON.stringify(challengesData));
+      
+      console.log(`✅ Cached challenges list (${challengesData.length} challenges, TTL: ${ttl}s)`);
+      return true;
+    } catch (error) {
+      console.error('❌ Redis setAllChallenges error:', error.message);
+      return false;
+    }
+  }
+
+  // Get single challenge
+  async getChallenge(challengeId) {
+    try {
+      const key = `skillsprint:challenge:${challengeId}`;
+      const cached = await this.client.get(key);
+      
+      if (cached) {
+        console.log(`🎯 Cache HIT for challenge ${challengeId}`);
+        return {
+          data: JSON.parse(cached),
+          cached_at: new Date().toISOString()
+        };
+      }
+      
+      console.log(`📀 Cache MISS for challenge ${challengeId}`);
+      return null;
+    } catch (error) {
+      console.error('❌ Redis getChallenge error:', error.message);
+      return null;
+    }
+  }
+
+  // Set single challenge
+  async setChallenge(challengeId, challengeData, ttl = 1200) { // 20 min default
+    try {
+      const key = `skillsprint:challenge:${challengeId}`;
+      await this.client.setEx(key, ttl, JSON.stringify(challengeData));
+      
+      console.log(`✅ Cached challenge ${challengeId} (TTL: ${ttl}s)`);
+      return true;
+    } catch (error) {
+      console.error('❌ Redis setChallenge error:', error.message);
+      return false;
+    }
+  }
+
+  // Get challenge leaderboard
+  async getChallengeLeaderboard(challengeId) {
+    try {
+      const key = `skillsprint:leaderboard:${challengeId}`;
+      const cached = await this.client.get(key);
+      
+      if (cached) {
+        console.log(`🎯 Cache HIT for challenge ${challengeId} leaderboard`);
+        return {
+          data: JSON.parse(cached),
+          cached_at: new Date().toISOString()
+        };
+      }
+      
+      console.log(`📀 Cache MISS for challenge ${challengeId} leaderboard`);
+      return null;
+    } catch (error) {
+      console.error('❌ Redis getChallengeLeaderboard error:', error.message);
+      return null;
+    }
+  }
+
+  // Set challenge leaderboard
+  async setChallengeLeaderboard(challengeId, leaderboardData, ttl = 300) { // 5 min default
+    try {
+      const key = `skillsprint:leaderboard:${challengeId}`;
+      await this.client.setEx(key, ttl, JSON.stringify(leaderboardData));
+      
+      console.log(`✅ Cached leaderboard for challenge ${challengeId} (${leaderboardData.length} participants, TTL: ${ttl}s)`);
+      return true;
+    } catch (error) {
+      console.error('❌ Redis setChallengeLeaderboard error:', error.message);
+      return false;
+    }
+  }
+
+  // 🚀 SMART INVALIDATION FUNCTIONS
+
+  // Invalidate specific challenge
+  async invalidateChallenge(challengeId) {
+    try {
+      const keys = [
+        `skillsprint:challenge:${challengeId}`,
+        `skillsprint:leaderboard:${challengeId}`
+      ];
+      
+      await this.client.del(keys);
+      console.log(`🗑️ Invalidated cache for challenge ${challengeId} (challenge + leaderboard)`);
+      return true;
+    } catch (error) {
+      console.error('❌ Redis invalidateChallenge error:', error.message);
+      return false;
+    }
+  }
+
+  // Invalidate all challenges list
+  async invalidateAllChallenges() {
+    try {
+      await this.client.del('skillsprint:challenges:all');
+      console.log('🗑️ Invalidated challenges list cache');
+      return true;
+    } catch (error) {
+      console.error('❌ Redis invalidateAllChallenges error:', error.message);
+      return false;
+    }
+  }
+
+  // Invalidate all leaderboards (when global changes happen)
+  async invalidateAllLeaderboards() {
+    try {
+      const keys = await this.client.keys('skillsprint:leaderboard:*');
+      if (keys.length > 0) {
+        await this.client.del(keys);
+        console.log(`🗑️ Invalidated ${keys.length} leaderboard caches`);
+      }
+      return keys.length;
+    } catch (error) {
+      console.error('❌ Redis invalidateAllLeaderboards error:', error.message);
+      return 0;
+    }
+  }
 }
 
 // STEP 5: Create cache instance
