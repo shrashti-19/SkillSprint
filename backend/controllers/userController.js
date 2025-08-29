@@ -4,7 +4,7 @@ const Challenge = require("../models/Challenge");
 
 const {cache, ensureConnected} = require('../utils/redisClient');
 
-
+const mongoose = require('mongoose');
 // const getUserProfile = async (req, res) => {
 //   try {
 //     const { userId } = req.params;
@@ -87,7 +87,7 @@ const {cache, ensureConnected} = require('../utils/redisClient');
 //   }
 // };
 //🚀 OPTIMIZED VERSION - Single aggregation pipeline
-const getUserProfileOptimized = async (req, res) => {
+const getUserProfile= async (req, res) => {
   const startTime = Date.now(); // Performance monitoring
   
   try {
