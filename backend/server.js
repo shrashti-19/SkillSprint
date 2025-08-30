@@ -16,10 +16,17 @@ const challengeRoutes = require('./routes/challengesRoutes');
 const progressRoutes = require('./routes/progressRoutes');
 
 // health check
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", uptime: process.uptime() });
-});
+// app.get("/health", (req, res) => {
+//   res.json({ status: "ok", uptime: process.uptime() });
+// });
 
+// Add this route
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString() 
+  });
+});
 
 //use routes
 app.use('/api/auth', authRoutes);
@@ -31,7 +38,7 @@ app.use("/api/leaderboard", require('./routes/leaderboard'));
 
 
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 
 async function start() {
   // optional DB connect for now
