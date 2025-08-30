@@ -1,6 +1,6 @@
 # SkillSprint Backend 🚀
 
-A gamified learning platform that helps users build consistent habits through streak tracking and social challenges.
+A production-ready, gamified learning backend built with Node.js, Express, and MongoDB — featuring streak tracking, caching, and performance optimization.
 
 ## 🎯 Project Overview
 
