@@ -2,7 +2,7 @@
 
 const Challenge = require('../models/Challenge');
 const User = require('../models/User');
-const { leaderboardManager } = require('../utils/LeaderboardHeap');
+const { leaderboardManager } = require('../utils/LeaderBoardHeap');
 
 // Get leaderboard for a specific challenge
 const getChallengeLeaderboard = async (req, res) => {
