@@ -28,18 +28,30 @@ import {
 // import CreateChallenge from './CreateChallenge';
 import CreateChallenge from './CreateChallenge';
 
-const Dashboard = () => {
+const Dashboard = ({ user: propUser, onLogout }) => {
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(propUser || null);
   const [notifications, setNotifications] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   // const [userProfile, setUserProfile] = useState(null);
 
   // Load data on component mount
-  useEffect(() => {
-    initializeDashboard();
-  }, []);
+  // Load data on component mount
+
+
+useEffect(() => {
+  // Set user data from props if available
+  if (propUser) {
+    setCurrentUser(propUser);
+    // Ensure userId is stored for API calls
+    if (propUser._id || propUser.id) {
+      localStorage.setItem('userId', propUser._id || propUser.id);
+    }
+  }
+  initializeDashboard();
+}, [propUser]);
+
 
   const initializeDashboard = async () => {
     try {
@@ -676,6 +688,27 @@ const loadChallenges = async () => {
               >
                 <Plus size={18} />
                 New Challenge
+
+                {onLogout && (
+  <button
+    onClick={onLogout}
+    style={{
+      background: 'rgba(255,255,255,0.2)',
+      border: 'none',
+      borderRadius: '12px',
+      padding: '12px 20px',
+      cursor: 'pointer',
+      color: 'white',
+      fontWeight: '600',
+      transition: 'background 0.2s ease'
+    }}
+    onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
+    onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+  >
+    Logout
+  </button>
+)}
+
               </button>
 
               <div style={{

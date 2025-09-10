@@ -12,26 +12,25 @@ const CreateChallenge = ({ onClose, onChallengeCreated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Mock API call for demonstration - replace with your actual API
-  const mockApiCall = async (data) => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  // Real API call using your backend
+  const createChallengeAPI = async (data) => {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const baseURL = 'https://skillsprint-production-663d.up.railway.app';
     
-    // Simulate occasional errors for testing
-    if (Math.random() < 0.1) {
-      throw new Error('Network error occurred');
+    const response = await fetch(`${baseURL}/api/challenges`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
     }
-    
-    // Return mock response matching your backend structure
-    return {
-      data: {
-        _id: Date.now().toString(),
-        ...data,
-        createdAt: new Date().toISOString(),
-        creator: 'current_user_id',
-        participants: []
-      }
-    };
+
+    return response.json();
   };
 
   const handleSubmit = async (e) => {
@@ -55,22 +54,20 @@ const CreateChallenge = ({ onClose, onChallengeCreated }) => {
     try {
       console.log('Creating challenge:', formData);
       
-      // Use the correct API endpoint that matches your backend
-      // Change this line to match your actual API setup:
-      // const response = await api.post('/api/challenges', formData);
+      // Use real API call to your backend
+      const response = await createChallengeAPI(formData);
       
-      // For now, using mock API call
-      const response = await mockApiCall(formData);
-      
-      console.log('Challenge created successfully:', response.data);
+      console.log('Challenge created successfully:', response);
       
       // Call parent callback to refresh challenges list
       if (onChallengeCreated) {
-        onChallengeCreated(response.data);
+        onChallengeCreated(response);
       }
       
       // Close the modal
-      onClose();
+      if (onClose) {
+        onClose();
+      }
       
     } catch (err) {
       console.error('Error creating challenge:', err);
@@ -78,16 +75,15 @@ const CreateChallenge = ({ onClose, onChallengeCreated }) => {
       // Better error handling
       let errorMessage = 'Failed to create challenge';
       
-      if (err.response) {
-        // Server responded with error status
-        errorMessage = err.response.data?.message || 
-                      err.response.data?.error || 
-                      `Server error: ${err.response.status}`;
-      } else if (err.request) {
-        // Network error
+      if (err.message.includes('401')) {
+        errorMessage = 'Please log in to create challenges';
+      } else if (err.message.includes('400')) {
+        errorMessage = 'Invalid challenge data. Please check your inputs.';
+      } else if (err.message.includes('500')) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (err.message.includes('Network')) {
         errorMessage = 'Network error. Please check your connection.';
       } else {
-        // Other error
         errorMessage = err.message || 'Unknown error occurred';
       }
       
