@@ -40,54 +40,65 @@ class SkillSprintCache {
 
   // Replace your LRU cache.get()
   async getUserProfile(userId) {
-    try {
-      const key = `skillsprint:user:${userId}`;
-      const cached = await this.client.hGetAll(key);
-      
-      if (Object.keys(cached).length > 0) {
-        console.log(`🎯 Cache HIT for user ${userId}`);
-        return {
-          source: 'cache',
-          data: cached,
-          timestamp: cached.timestamp
-        };
-      }
-      
-      console.log(`📀 Cache MISS for user ${userId}`);
-      return null;
-    } catch (error) {
-      console.error('❌ Redis getUserProfile error:', error.message);
-      return null;
+        try {
+            const key = `skillsprint:user:${userId}`;
+            const cached = await this.client.hGetAll(key);
+
+            if (Object.keys(cached).length > 0) {
+                console.log(`🎯 Cache HIT for user ${userId}`);
+
+                // NEW: Deserialization Logic
+                const parsedData = {};
+                for (const k in cached) {
+                    try {
+                        // Attempt to parse the value as JSON
+                        parsedData[k] = JSON.parse(cached[k]);
+                    } catch (e) {
+                        // If parsing fails, it's a simple string, so keep it as is
+                        parsedData[k] = cached[k];
+                    }
+                }
+                
+                return {
+                    source: 'cache',
+                    data: parsedData, // Return the parsed object
+                    timestamp: parsedData.timestamp,
+                };
+            }
+
+            console.log(`📀 Cache MISS for user ${userId}`);
+            return null;
+        } catch (error) {
+            console.error('❌ Redis getUserProfile error:', error.message);
+            return null;
+        }
     }
-  }
 
-  // Replace your LRU cache.set()
-  async setUserProfile(userId, profileData, ttl = this.defaultTTL) {
-    try {
-      const key = `skillsprint:user:${userId}`;
-      
-      // Convert all values to strings for Redis hash
-      const dataForRedis = {};
-      Object.keys(profileData).forEach(k => {
-        dataForRedis[k] = typeof profileData[k] === 'object' 
-          ? JSON.stringify(profileData[k]) 
-          : String(profileData[k]);
-      });
-      
-      dataForRedis.timestamp = new Date().toISOString();
-      dataForRedis.cached_at = String(Date.now());
+    async setUserProfile(userId, profileData, ttl = this.defaultTTL) {
+        try {
+            const key = `skillsprint:user:${userId}`;
+            
+            // Convert all nested objects to strings for Redis hash
+            const dataForRedis = {};
+            Object.keys(profileData).forEach(k => {
+                dataForRedis[k] = typeof profileData[k] === 'object' 
+                    ? JSON.stringify(profileData[k]) 
+                    : String(profileData[k]);
+            });
+            
+            dataForRedis.timestamp = new Date().toISOString();
+            dataForRedis.cached_at = String(Date.now());
 
-      await this.client.hSet(key, dataForRedis);
-      await this.client.expire(key, ttl);
-      
-      console.log(`✅ Cached user profile: ${userId} (TTL: ${ttl}s)`);
-      return true;
-    } catch (error) {
-      console.error('❌ Redis setUserProfile error:', error.message);
-      return false;
+            await this.client.hSet(key, dataForRedis);
+            await this.client.expire(key, ttl);
+            
+            console.log(`✅ Cached user profile: ${userId} (TTL: ${ttl}s)`);
+            return true;
+        } catch (error) {
+            console.error('❌ Redis setUserProfile error:', error.message);
+            return false;
+        }
     }
-  }
-
   // Replace your LRU cache.getStats()
   async getStats() {
     try {
