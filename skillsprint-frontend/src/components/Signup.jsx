@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, Loader2 } from 'lucide-react';
 
-const Login = ({ onLogin, onShowSignup }) => {
+const Signup = ({ onSignup, onShowLogin }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,26 +14,26 @@ const Login = ({ onLogin, onShowSignup }) => {
     setError(null);
 
     const baseURL = 'https://skillsprint-production-663d.up.railway.app';
-    
+
     try {
-      const response = await fetch(`${baseURL}/api/auth/login`, {
+      const response = await fetch(`${baseURL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed. Please check your credentials.');
+        throw new Error(data.message || 'Signup failed. Please try again.');
       }
 
-      onLogin(data); // Pass the entire user object from the backend
+      onSignup(data); // Pass the user object to the App component to handle login
       
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Signup error:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -67,7 +68,7 @@ const Login = ({ onLogin, onShowSignup }) => {
           marginBottom: '32px',
           letterSpacing: '-1px'
         }}>
-          Welcome Back
+          Join SkillSprint
         </h2>
         
         {error && (
@@ -86,6 +87,39 @@ const Login = ({ onLogin, onShowSignup }) => {
         )}
 
         <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontSize: '0.9rem',
+              opacity: 0.8
+            }}>Full Name</label>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+            }}>
+              <User size={20} style={{ marginRight: '12px' }} />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+                placeholder="John Doe"
+              />
+            </div>
+          </div>
+          
           <div style={{ marginBottom: '20px' }}>
             <label style={{
               display: 'block',
@@ -157,7 +191,7 @@ const Login = ({ onLogin, onShowSignup }) => {
             disabled={loading}
             style={{
               width: '100%',
-              background: loading ? '#9ca3af' : 'linear-gradient(135deg, #a78bfa, #8b5cf6)',
+              background: loading ? '#9ca3af' : 'linear-gradient(135deg, #10b981, #059669)',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
@@ -172,7 +206,7 @@ const Login = ({ onLogin, onShowSignup }) => {
               gap: '12px'
             }}
           >
-            {loading ? <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} /> : 'Login'}
+            {loading ? <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} /> : 'Sign Up'}
           </button>
         </form>
         
@@ -181,7 +215,7 @@ const Login = ({ onLogin, onShowSignup }) => {
           marginTop: '24px',
           fontSize: '0.9rem'
         }}>
-          Don't have an account? <button onClick={onShowSignup} style={{
+          Already have an account? <button onClick={onShowLogin} style={{
             background: 'none',
             border: 'none',
             color: 'white',
@@ -191,11 +225,11 @@ const Login = ({ onLogin, onShowSignup }) => {
             padding: 0,
             transition: 'opacity 0.2s',
             fontSize: 'inherit'
-          }}>Sign Up</button>
+          }}>Login</button>
         </p>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Signup;

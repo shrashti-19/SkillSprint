@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Target, Calendar, FileText, X } from 'lucide-react';
 
-const CreateChallenge = ({ onClose, onChallengeCreated }) => {
+const ChallengeCreateForm = ({ onClose, onChallengeCreated }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -413,4 +413,4 @@ const CreateChallenge = ({ onClose, onChallengeCreated }) => {
   );
 };
 
-export default CreateChallenge;
+export default ChallengeCreateForm;
