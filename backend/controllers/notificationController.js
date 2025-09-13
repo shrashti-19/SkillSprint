@@ -8,6 +8,8 @@ const { NotificationPriorityCalculator, notificationQueue } = require("../utils/
  * This function is used by the frontend to display a user's notifications.
  */
 const getNotifications = async (req, res) => {
+  //console.log("🚪 Auth middleware reached for path:", req.originalUrl);
+  console.log("🎯 Request reached getNotifications controller function.");
   try {
     const { userId } = req.params;
 

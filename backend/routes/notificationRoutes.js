@@ -1,3 +1,5 @@
+console.log("✅ notificationRoutes.js is being loaded.");
+
 const express = require("express");
 const {
   generateSmartNotifications,
