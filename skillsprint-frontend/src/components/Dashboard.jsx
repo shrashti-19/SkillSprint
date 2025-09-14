@@ -68,7 +68,9 @@ const ChallengeCreateForm = ({ onClose, onSuccess }) => {
         throw new Error(errorData.message || 'Failed to create challenge');
       }
 
-      const newChallenge = await response.json();
+      const result = await response.json();
+      const newChallenge = result.data || result;
+      
       console.log('Challenge created:', newChallenge);
       // Pass the new challenge data to the parent component
       onSuccess(newChallenge);
@@ -149,6 +151,8 @@ const Dashboard = ({ user: propUser, onLogout }) => {
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(propUser || null);
+  const [authToken, setAuthToken] = useState(propUser?.token || null);
+  const [userId, setUserId] = useState(propUser?._id || propUser?.id || null);
   const [notifications, setNotifications] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [actionLoading, setActionLoading] = useState({});
@@ -159,9 +163,9 @@ const Dashboard = ({ user: propUser, onLogout }) => {
     const initialLoad = async () => {
       // If a user is passed as a prop, use that; otherwise, try to load from backend
       if (propUser) {
-        localStorage.setItem('userId', propUser._id || propUser.id);
-        localStorage.setItem('authToken', propUser.token);
-        setCurrentUser(propUser);
+        setUserId(propUser._id || propUser.id);
+        setAuthToken(propUser.token);
+        //setCurrentUser(propUser);
       }
       
       await initializeDashboard();
@@ -198,7 +202,7 @@ const Dashboard = ({ user: propUser, onLogout }) => {
   };
 
   const getAuthToken = () => {
-    return localStorage.getItem('authToken') || localStorage.getItem('token');
+    return authToken;
   };
 
   const apiCall = async (endpoint, options = {}) => {
@@ -239,7 +243,7 @@ const Dashboard = ({ user: propUser, onLogout }) => {
             addNotification('error', 'Please log in to access dashboard');
             return null;
         }
-        const userId = localStorage.getItem('userId');
+        //const userId = localStorage.getItem('userId');
         if (userId) {
             const response = await apiCall(`/api/users/profile/${userId}`);
             const profileData = response.data;
@@ -257,7 +261,8 @@ const Dashboard = ({ user: propUser, onLogout }) => {
 
   const loadChallenges = async () => {
     try {
-      const challengesData = await apiCall('/api/challenges');
+      const response = await apiCall('/api/challenges');
+      const challengesData = response.data || response;
       setChallenges(Array.isArray(challengesData) ? challengesData : []);
     } catch (error) {
       console.error('Error loading challenges:', error);
@@ -1287,18 +1292,15 @@ const Dashboard = ({ user: propUser, onLogout }) => {
       </div>
       
       {showCreateForm && (
-        <ChallengeCreateForm 
-          onClose={() => setShowCreateForm(false)} 
-          onSuccess={(newChallenge) => {
-            // Optimistically add the new challenge to the state for immediate display
-            setChallenges(prev => [newChallenge, ...prev]);
-            setShowCreateForm(false);
-            addNotification('success', 'Challenge created successfully!');
-            // Refresh all data in the background to ensure consistency
-            initializeDashboard();
-          }} 
-        />
-      )}
+  <ChallengeCreateForm 
+    onClose={() => setShowCreateForm(false)} 
+    onSuccess={() => {
+      setShowCreateForm(false);
+      addNotification('success', 'Challenge created successfully!');
+      loadChallenges();
+    }} 
+  />
+   )}
     </div>
   );
 };
